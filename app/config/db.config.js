@@ -1,9 +1,11 @@
 module.exports = {
 
   //Local
-  USER: "postgres",
-  PASSWORD: "20588459jz",
-  DB: "mbipi_test",
+  HOST: "dpg-ceg740la499e21rqul70-a",
+  USER: "mbipi_user",
+  PASSWORD: "3W5lc8dEtIbCDFClfQoScWNmQ0nqKWcs",
+  DB: "mbipi",
+  PORT: 5432,
 
 //Heroku
   /*
