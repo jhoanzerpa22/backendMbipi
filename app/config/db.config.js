@@ -1,11 +1,11 @@
 module.exports = {
 
   //Local
-  HOST: "dpg-ceg740la499e21rqul70-a",
-  USER: "mbipi_user",
-  PASSWORD: "3W5lc8dEtIbCDFClfQoScWNmQ0nqKWcs",
-  DB: "mbipi",
-  PORT: 5432,
+  //HOST: "dpg-ceg740la499e21rqul70-a",
+  //USER: "mbipi_user",
+  //PASSWORD: "3W5lc8dEtIbCDFClfQoScWNmQ0nqKWcs",
+  //DB: "mbipi",
+  //PORT: 5432,
 
 //Heroku
   /*
@@ -20,6 +20,13 @@ module.exports = {
   //USER: "tresidea_mbipidb",
   //PASSWORD: "k{ndin[m}maR",
   //DB: "tresidea_mbipi",
+
+  //NEW 2024
+    HOST: 'mydbinstance.cx8veodvooht.us-east-2.rds.amazonaws.com',
+    USER: 'gqbcuhhtuzirgfv',
+    PASSWORD: 'passwordmaster',
+    DB: 'mbipi',
+    
   dialect: "postgres",
   pool: {
     max: 5,

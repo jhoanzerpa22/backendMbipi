@@ -1,0 +1,18 @@
+INSERT INTO public.login (id, correo_login, pass_hash, pass_token_verify, verify) VALUES ('2'::integer, 'jhoan.zerpa@tresidea.cl'::character varying, '$2a$08$wsu5VyGH0rcHzKTRwfr/6.vuwWA4mNprXYnlAhCQylBNHBTBEcWmu'::character varying, '$2a$08$A5vLcro/DRXh/LzqRuWx6efDosvn81EXn0ESMTNTmgObLkY7Ke7KG'::character varying, true::boolean) returning id;
+
+INSERT INTO public.login (id, correo_login, pass_hash, pass_token_verify, verify) VALUES ('3'::integer, 'benjamin.lennon@tresidea.cl'::character varying, '$2a$08$wsu5VyGH0rcHzKTRwfr/6.vuwWA4mNprXYnlAhCQylBNHBTBEcWmu'::character varying, '$2a$08$A5vLcro/DRXh/LzqRuWx6efDosvn81EXn0ESMTNTmgObLkY7Ke7KG'::character varying, true::boolean) returning id;
+
+INSERT INTO public.usuario_plataforma (id, nombre, rut, correo, login_id, completada) VALUES ('1'::integer, 'Admin'::character varying, '12345678-5'::character varying, 'admin@demo.com'::character varying, '1'::integer, true::boolean) returning id;
+
+
+INSERT INTO public.usuario_plataforma (id, nombre, rut, correo, login_id, completada, tipo_cuenta, tipo_plan, nombre_empresa, financiamiento, tipo_financiamiento, informacion, "nameOnCard", "cardCvv", "cardNumber", "cardExpiryMonth", "cardExpiryYear") VALUES ('2'::integer, 'Jhoan Tresidea'::character varying, '12345678-5'::character varying, 'jhoan.zerpa@tresidea.cl'::character varying, '2'::integer, true::boolean, 'usuario'::character varying, 'pago'::character varying, 'Tresidea Jhoan'::character varying, 'si'::character varying, 'publico'::character varying, '1'::text, 'Max Doe'::character varying, 'U2FsdGVkX19XQxc8ZN0c6dcepGUTiZ4xgeicgYv+F10='::character varying, 'U2FsdGVkX19XQxc8ZN0c6dcepGUTiZ4xgeicgYv+F10='::character varying, '1'::character varying, '2024'::character varying) returning id;
+
+INSERT INTO public.usuario_plataforma (id, nombre, rut, correo, login_id, completada, tipo_cuenta, tipo_plan, nombre_empresa, financiamiento, tipo_financiamiento, informacion, "nameOnCard", "cardCvv", "cardNumber", "cardExpiryMonth", "cardExpiryYear") VALUES ('3'::integer, 'Benjamin Lennon'::character varying, '12345678-5'::character varying, 'benjamin.lennon@tresidea.cl'::character varying, '3'::integer, true::boolean, 'usuario'::character varying, 'pago'::character varying, 'Tresidea'::character varying, 'si'::character varying, 'publico'::character varying, '1'::text, 'Max Doe'::character varying, 'U2FsdGVkX19XQxc8ZN0c6dcepGUTiZ4xgeicgYv+F10='::character varying, 'U2FsdGVkX19XQxc8ZN0c6dcepGUTiZ4xgeicgYv+F10='::character varying, '1'::character varying, '2024'::character varying) returning id;
+
+INSERT INTO public.user_roles ("createdAt", "updatedAt", "userId", "roleId") VALUES ('2022-12-19 11:46:11.107-04'::timestamp with time zone, '2022-12-19 11:46:11.107-04'::timestamp with time zone, '1'::integer, '1'::integer) returning "roleId","userId";
+
+INSERT INTO public.user_roles ("createdAt", "updatedAt", "userId", "roleId") VALUES ('2022-12-19 11:46:11.107-04'::timestamp with time zone, '2022-12-19 11:46:11.107-04'::timestamp with time zone, '2'::integer, '2'::integer) returning "roleId","userId";
+
+INSERT INTO public.user_roles ("createdAt", "updatedAt", "userId", "roleId") VALUES ('2022-12-19 11:46:11.107-04'::timestamp with time zone, '2022-12-19 11:46:11.107-04'::timestamp with time zone, '2'::integer, '3'::integer) returning "roleId","userId";
+
+UPDATE public.proyectos SET etapa_activa = '/proyect-init/1/fase45'::character varying WHERE id = 1;
