@@ -1676,7 +1676,6 @@ async function sendMailResume(user, callback) {
 
     //configuración envío de email invitaciones
     async function sendMailInvitacions(user, callback) {
-
       // create reusable transporter object using the default SMTP transport
       let transporter = nodemailer.createTransport({
         host: mailConfig.HOST,
