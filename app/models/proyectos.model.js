@@ -39,6 +39,9 @@ module.exports = (sequelize, Sequelize) => {
       tiempo: {
         type: Sequelize.STRING
       },
+      tiempo_paso: {
+        type: Sequelize.STRING
+      },
       fecha_inicio: {
         type: Sequelize.DATE
       },

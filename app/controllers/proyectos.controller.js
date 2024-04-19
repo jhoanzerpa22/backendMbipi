@@ -365,6 +365,34 @@ exports.updateTime = (req, res) => {
     });
 };
 
+// Update time pass the Proyectos by the id in the request
+exports.updateTimePass = (req, res) => {
+  const id = req.params.id;
+  let proyectos = {
+      tiempo_paso: JSON.stringify(req.body.tiempo_paso)
+    };
+
+  Proyectos.update(proyectos, {
+    where: { id: id }
+  })
+    .then(num => {
+      if (num == 1) {
+        res.send({
+          message: `Proyecto with id=${id} was updated successfully.`
+        });
+      } else {
+        res.send({
+          message: `Cannot update Proyectos with id=${id}. Maybe Proyectos was not found or req.body is empty!`
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: "Error updating Proyectos with id=" + id
+      });
+    });
+};
+
 // Update notacp the Proyectos by the id in the request
 exports.updateNotaCp = (req, res) => {
   const id = req.params.id;
