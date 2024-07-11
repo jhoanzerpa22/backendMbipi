@@ -47,6 +47,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       fecha_termino: {
         type: Sequelize.DATE
+      },
+      logo_id: {
+        type: Sequelize.INTEGER
       }
     }, {
       tableName: 'proyectos',

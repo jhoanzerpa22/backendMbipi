@@ -150,6 +150,10 @@ db.proyectos.hasMany(db.proyecto_recurso, { as: "proyecto_recursos",
   foreignKey: 'proyecto_id'
  });
 
+db.proyectos.belongsTo(db.cloud_user, {
+  foreignKey: 'logo_id'
+});
+
 db.proyecto_recurso.belongsTo(db.user, {
   foreignKey: 'usuario_id'
 });

@@ -1,5 +1,8 @@
 const db = require("../models");
 const serverConfig = require("../config/server.config.js");
+const upload = require('../config/multer');
+const cloudinary = require("cloudinary").v2;
+var fs = require('fs');
 
 const Proyectos = db.proyectos;
 const Equipos = db.equipos;
@@ -33,6 +36,13 @@ const Op = db.Sequelize.Op;
 
 var bcrypt = require("bcryptjs");
 const { data } = require("jquery");
+
+cloudinary.config({
+  cloud_name: 'tresideambipi',
+  api_key: '735689747739288',
+  api_secret: 'oPjl3NwlqAmOIWewUnbc01Jt8Jc',
+  secure: true
+});
 
 // Create and Save a new Proyectos
 exports.create = (req, res) => {
@@ -119,7 +129,10 @@ exports.findAll = (req, res) => {
   const nombre = req.query.nombre;
   var condition = nombre ? { nombre: { [Op.iLike]: `%${nombre}%` } } : null;
 
-  Proyectos.findAll({ where: condition})
+  Proyectos.findAll({ where: condition, include: [{
+      model: CloudUser, attributes:['id','name','secure_url','cloudinary_id']
+    }]
+    })
     .then(data => {
       res.send(data);
     })
@@ -190,6 +203,9 @@ exports.findOne = (req, res) => {
           }, {
             model: CloudUser/*, as: "equipo_usuarios"*/, attributes:['id','name','secure_url','cloudinary_id']
           }]
+      },
+      {
+        model: CloudUser, attributes:['id','name','secure_url','cloudinary_id']
       }]
     })
     .then(data => {
@@ -225,7 +241,9 @@ exports.dashboard = (req, res) => {
     include: [{
               model: Equipos, as: "equipos_equipo", attributes:['nombre'],
                   include: [{
-                      model: Proyectos, as: "equipo_proyecto", attributes:['id','nombre','descripcion', 'estado', 'fecha_inicio']
+                      model: Proyectos, as: "equipo_proyecto", attributes:['id','nombre','descripcion', 'estado', 'fecha_inicio','tiempo'], include: [{
+                        model: CloudUser, attributes:['id','name','secure_url','cloudinary_id']
+                      }]
                       },{
                       model: EquiposUsuarios, as: "equipo_usuarios", attributes:['id','correo','rol','usuario_id'],
                           include: [{
@@ -277,13 +295,35 @@ exports.dashboard = (req, res) => {
   };
 
 // Update a Proyectos by the id in the request
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   const id = req.params.id;
+  
+  //const files = req.files
+  let data
+
+  typeof req.body.data == 'string' ? data = JSON.parse(req.body.data) : data = req.body
+
+  try{
+    const result = await cloudinary.uploader.upload(req.file.path)
+    //Crea una instancia de cloud_user
+    let cloud_user = {
+      name: 'Logo-'+req.params.id,
+      secure_url: result.secure_url,
+      cloudinary_id: result.public_id
+    };
+
+    console.log('cloud_user', cloud_user);
+    console.log('parametros',req.params);
+
+    await CloudUser.create(cloud_user).then(cloud =>{
+      console.log('cloud:',cloud);
+
   let proyectos = {
-      nombre: req.body.nombre,
-      descripcion: req.body.descripcion,
-      aplicacion_tipo: req.body.aplicacion_tipo,
-      proyecto_tipo_id: req.body.proyecto_tipo_id
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      aplicacion_tipo: data.aplicacion_tipo,
+      proyecto_tipo_id: data.proyecto_tipo_id,
+      logo: cloud.dataValues.id
     };
 
   Proyectos.update(proyectos, {
@@ -305,6 +345,16 @@ exports.update = (req, res) => {
         message: "Error updating Proyectos with id=" + id
       });
     });
+  
+  }).catch(err => {
+      res.status(500).send({
+      message: "Error creating CloudUser. Error:"+err.message
+      });
+  });
+} catch(err) {
+  console.log(err)
+}
+
 };
 
 // Update status the Proyectos by the id in the request
