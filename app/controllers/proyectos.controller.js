@@ -241,7 +241,7 @@ exports.dashboard = (req, res) => {
     include: [{
               model: Equipos, as: "equipos_equipo", attributes:['nombre'],
                   include: [{
-                      model: Proyectos, as: "equipo_proyecto", attributes:['id','nombre','descripcion', 'estado', 'fecha_inicio','tiempo'], include: [{
+                      model: Proyectos, as: "equipo_proyecto", attributes:['id','nombre','descripcion', 'estado', 'fecha_inicio','tiempo','etapa_activa'], include: [{
                         model: CloudUser, attributes:['id','name','secure_url','cloudinary_id']
                       }]
                       },{
