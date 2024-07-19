@@ -2,11 +2,14 @@ const db = require("../models");
 const path = require("path");
 const serverConfig = require("../config/server.config.js");
 const nodemailer = require("nodemailer");
+const upload = require('../config/multer');
+const cloudinary = require("cloudinary").v2;
 
 const Usuario = db.usuario;
 const User = db.user;
 const Role = db.role;
 const EquiposUsuarios = db.equipos_usuarios;
+const CloudUser = db.cloud_user;
 
 const Op = db.Sequelize.Op;
 
@@ -16,59 +19,82 @@ const { empty } = require("rxjs");
 const { user } = require("../models");
 var CryptoJS = require("crypto-js");
 
+cloudinary.config({
+  cloud_name: 'tresideambipi',
+  api_key: '735689747739288',
+  api_secret: 'oPjl3NwlqAmOIWewUnbc01Jt8Jc',
+  secure: true
+});
+
 //var fs = require('fs');
 
 // Create and Save a new Usuario
 exports.create = (req, res) => {
+
+  // 'file' is the name attribute of the file input field in your form
+  upload.single('file')(req, res, async function (err) {
+  let data
+  let secure_url
+
+  typeof req.body.data == 'string' ? data = JSON.parse(req.body.data) : data = req.body
+
   // Validate request
-  if (!req.body.nombre) {
+  if (!data.nombre) {
     res.status(400).send({
       message: "Content can not be empty!"
     });
     return;
   }
+  
+  if(data.img_changed){
+    const result = await cloudinary.uploader.upload(req.file.path)  
+    //Crea una instancia de cloud_user
+    secure_url = result.secure_url;
+  }
 
   User.findOne({
-    where: {correo_login: req.body.correo_login}
+    where: {correo_login: data.correo_login}
   })
   .then(finduser => {
   if (!finduser) {
 
-  if(!empty(req.body.img)){
+  /*if(!empty(req.body.img)){
     var base64Data1 = req.body.img.replace(/^data:image\/png;base64,/, ""); 
     var base64Data2 = base64Data1.replace(/^data:image\/jpeg;base64,/, ""); 
     var base64Data = base64Data2.replace(/^data:image\/jpg;base64,/, ""); 
 
     require("fs").writeFile(serverConfig.HOST_SAVE+"usuarios/usuario-"+req.body.nombre+".png", base64Data, 'base64', function(err) { console.log(err); });
-  }
-  const pass_verify = bcrypt.hashSync(req.body.correo_login, 8);
+  }*/
+
+  const pass_verify = bcrypt.hashSync(data.correo_login, 8);
+
   // Save User to Database
   User.create({
-    correo_login: req.body.correo_login,
-    pass_hash: bcrypt.hashSync(req.body.password, 8),
+    correo_login: data.correo_login,
+    pass_hash: bcrypt.hashSync(data.password, 8),
     pass_token_verify: pass_verify,
-    verify: req.body.verify
+    verify: data.verify
   })
     .then(user => {
       Usuario.create({
-          nombre: req.body.nombre,
-          rut: req.body.rut,
-          fono: req.body.fono,
-          correo: req.body.correo_login,
-          completada: req.body.completada,
-          //direccion: req.body.direccion,
-          img: !empty(req.body.img) ? "assets/img/usuarios/usuario-"+req.body.nombre+".png" : null,
+          nombre: data.nombre,
+          rut: data.rut,
+          fono: data.fono,
+          correo: data.correo_login,
+          completada: data.completada,
+          //direccion: data.direccion,
+          img: /*!empty(data.img) ? "assets/img/usuarios/usuario-"+data.nombre+".png" : null*/secure_url,
           login_id: user.id
         }).then(() =>{
         }).catch(err => {
           res.status(500).send({ message: 'Error Crear Datos de Usuario: '+err.message });
         });
 
-        if (req.body.roles) {
+        if (data.roles) {
           /*Role.findAll({
             where: {
               nombre: {
-                [Op.or]: req.body.roles
+                [Op.or]: data.roles
               }
             }
           }).then(roles => {
@@ -76,14 +102,14 @@ exports.create = (req, res) => {
               res.send({ message: "User was registered successfully!" });
             });
           });*/
-          Role.findByPk(req.body.roles)
+          Role.findByPk(data.roles)
           .then(roles => {
             user.setRoles([roles]).then(() => {
               // create reusable transporter object using the default SMTP transport
               const usuario_new = {
-                correo_login: req.body.correo_login,
+                correo_login: data.correo_login,
                 pass_token_verify: pass_verify,
-                nombre: req.body.nombre
+                nombre: data.nombre
               };
               
               res.send({ message: "User was registered successfully!", data: usuario_new });
@@ -112,6 +138,7 @@ exports.create = (req, res) => {
   .catch(err => {
     res.status(500).send({ message: 'Error Buscar Usuario: '+err.message });
   });
+  });
 };
 
 // Retrieve all Usuarios from the database.
@@ -122,11 +149,11 @@ exports.findAll = (req, res) => {
   Usuario.findAll({ where: condition, include: [{model: User, attributes:['correo_login'], include: [{model: Role, attributes:['id','nombre']}, {
     model: EquiposUsuarios, as: "usuario_equipos", attributes:['id','correo','rol','usuario_id']}] }]})
     .then(data => {
-      for (let i = 0; i < data.length; i++) {
+      /*for (let i = 0; i < data.length; i++) {
         if(data[i].img != null){
           data[i].img = serverConfig.HOST+'/'+data[i].img;
         }
-        }
+      }*/
       res.send(data);
     })
     .catch(err => {
@@ -144,9 +171,9 @@ exports.findOne = (req, res) => {
   Usuario.findByPk(id,{ include: [{model: User, attributes:['correo_login'], include: [{model: Role, attributes:['id','nombre']}]}] })
     .then(data => {
       if (data) {
-        if(data.img != null){
+        /*if(data.img != null){
           data.img = serverConfig.HOST+'/'+data.img;
-        }
+        }*/
         res.send(data);
       } else {
         res.status(404).send({
@@ -170,9 +197,9 @@ exports.getInfo = (req, res) => {
   , include: [{model: User, attributes:['correo_login'], include: [{model: Role, attributes:['id','nombre']}]}] })
     .then(data => {
       if (data) {
-        if(data.img != null){
+        /*if(data.img != null){
           data.img = serverConfig.HOST+'/'+data.img;
-        }
+        }*/
         res.send(data);
       } else {
         res.status(404).send({
@@ -287,25 +314,39 @@ exports.savePayment = async (req, res) => {
 
 // Update a Usuario by the id in the request
 exports.update = (req, res) => {
+  // 'file' is the name attribute of the file input field in your form
+  upload.single('file')(req, res, async function (err) {
+    
   const id = req.params.id;
-  var imagen = "assets/img/usuarios/usuario-"+req.body.nombre+".png";
+  //var imagen = "assets/img/usuarios/usuario-"+req.body.nombre+".png";
 	let usuario = {};
-	if(req.body.img_changed){
+	/*if(req.body.img_changed){
 		var base64Data1 = req.body.img.replace(/^data:image\/png;base64,/, ""); 
     var base64Data2 = base64Data1.replace(/^data:image\/jpeg;base64,/, ""); 
     var base64Data = base64Data2.replace(/^data:image\/jpg;base64,/, ""); 
 
     require("fs").writeFile(serverConfig.HOST_SAVE+"usuarios/usuario-"+req.body.nombre+".png", base64Data, 'base64', function(err) { console.log(err); });
-	   
+	*/
+  let data
+  let secure_url
+
+  typeof req.body.data == 'string' ? data = JSON.parse(req.body.data) : data = req.body
+
+  if(data.img_changed){
+    const result = await cloudinary.uploader.upload(req.file.path)  
+    //Crea una instancia de cloud_user
+    secure_url = result.secure_url;
+  }
+
     usuario = {
-      nombre: req.body.nombre,
-      rut: req.body.rut,
-      fono: req.body.fono,
-      correo_login: req.body.correo_login,
-      img: imagen,
+      nombre: data.nombre,
+      rut: data.rut,
+      fono: data.fono,
+      correo_login: data.correo_login,
+      img: data.img_changed ? secure_url : data.img,
       //direccion: req.body.direccion
     };
-  }else{
+  /*}else{
 		
     usuario = {
       nombre: req.body.nombre,
@@ -314,7 +355,7 @@ exports.update = (req, res) => {
       correo_login: req.body.correo_login,
       //direccion: req.body.direccion
     };
-  }
+  }*/
 
   Usuario.update(usuario, {
     where: { id: id }
@@ -334,6 +375,7 @@ exports.update = (req, res) => {
       res.status(500).send({
         message: "Error updating Usuario with id=" + id
       });
+    });
     });
 };
 

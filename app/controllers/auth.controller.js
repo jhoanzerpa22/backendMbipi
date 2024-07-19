@@ -105,7 +105,7 @@ exports.signin = (req, res) => {
                   fono: usuario.fono,
                   email: usuario.correo,
                   correo_login: user.correo_login,
-                  img: serverConfig.HOST+'/'+usuario.img,
+                  img: /*serverConfig.HOST+'/'+*/usuario.img,
                   roles: authorities,
                   accessToken: token,
                   verify: user.verify,
@@ -122,7 +122,7 @@ exports.signin = (req, res) => {
                   fono: usuario.fono,
                   email: usuario.correo,
                   correo_login: user.correo_login,
-                  img: serverConfig.HOST+'/'+usuario.img,
+                  img: /*serverConfig.HOST+'/'+*/usuario.img,
                   roles: authorities,
                   accessToken: token,
                   verify: user.verify,
@@ -140,7 +140,7 @@ exports.signin = (req, res) => {
                 fono: usuario.fono,
                 email: usuario.correo,
                 correo_login: user.correo_login,
-                img: serverConfig.HOST+'/'+usuario.img,
+                img: /*serverConfig.HOST+'/'*/+usuario.img,
                 roles: authorities,
                 accessToken: token,
                 verify: user.verify,
@@ -235,10 +235,6 @@ exports.forgotPassword = (req, res) => {
         pass_recovery_hash : pass_recovery_hash,
         pass_recovery_token: pass_recovery_token
       }
-
-
-
-      // console.log(token);
 
       User.update(provisory_passandtoken, {
         where: { id: id }
