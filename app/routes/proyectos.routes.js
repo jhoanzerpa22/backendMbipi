@@ -35,57 +35,56 @@ module.exports = app => {
   
     // Update a Proyectos with id
     //router.put("/:id", proyectos.update);
-router.put('/:id', upload.single('file'), async (req, res)=>{
-  try{
-    const result = await cloudinary.uploader.upload(req.file.path)
-    //Crea una instancia de cloud_user
-    let cloud_user = {
-      name: 'Logo-'+req.params.id,
-      secure_url: result.secure_url,
-      cloudinary_id: result.public_id
-    };
+    router.put('/:id', upload.single('file'), async (req, res)=>{
+        try{
+          const result = await cloudinary.uploader.upload(req.file.path)
+          //Crea una instancia de cloud_user
+          let cloud_user = {
+            name: 'Logo-'+req.params.id,
+            secure_url: result.secure_url,
+            cloudinary_id: result.public_id
+          };
 
-    console.log('cloud_user', cloud_user);
-    console.log('parametros',req.params);
+          console.log('cloud_user', cloud_user);
+          console.log('parametros',req.params);
 
-    await CloudUser.create(cloud_user).then(cloud =>{
-      console.log('cloud:',cloud);
-      
-      const id = req.params.id;
-      let data
+          await CloudUser.create(cloud_user).then(cloud =>{
+            console.log('cloud:',cloud);
+            
+            const id = req.params.id;
+            let data
 
-      typeof req.body.data == 'string' ? data = JSON.parse(req.body.data) : data = req.body
+            typeof req.body.data == 'string' ? data = JSON.parse(req.body.data) : data = req.body
 
-      let proyectos = {
-        nombre: data.nombre,
-        descripcion: data.descripcion,
-        aplicacion_tipo: data.aplicacion_tipo,
-        proyecto_tipo_id: data.proyecto_tipo_id,
-        logo_id: cloud.dataValues.id
-      };
+            let proyectos = {
+              nombre: data.nombre,
+              descripcion: data.descripcion,
+              aplicacion_tipo: data.aplicacion_tipo,
+              proyecto_tipo_id: data.proyecto_tipo_id,
+              logo_id: cloud.dataValues.id
+            };
 
-      Proyectos.update(proyectos, {where: { id: id} }).then(pr =>{
-          res.send({
-            message: `Proyecto with id=${req.params.proyecto_id} was updated successfully.`, cloud_id: cloud.dataValues.id
+            Proyectos.update(proyectos, {where: { id: id} }).then(pr =>{
+                res.send({
+                  message: `Proyecto with id=${req.params.proyecto_id} was updated successfully.`, cloud_id: cloud.dataValues.id
+                });
+
+            }).catch(err => {
+                res.status(500).send({
+                message: "Error creating ProyectoRecurso. Error:"+err.message
+                });
+            });
+
+          }).catch(err => {
+              res.status(500).send({
+              message: "Error creating CloudUser. Error:"+err.message
+              });
           });
-
-      }).catch(err => {
-          res.status(500).send({
-          message: "Error creating ProyectoRecurso. Error:"+err.message
-          });
-      });
-
-    }).catch(err => {
-        res.status(500).send({
-        message: "Error creating CloudUser. Error:"+err.message
-        });
-    });
-    
-  } catch(err) {
-    console.log(err)
-  }
-})
-
+          
+        } catch(err) {
+          console.log(err)
+        }
+    })
 
     // Update the members of Proyectos with id
     router.put("/updateMembers/:id", proyectos.updateMembers);
@@ -344,6 +343,9 @@ router.put('/:id', upload.single('file'), async (req, res)=>{
 
     // Create a new Proyectos
     router.delete("/", proyectos.deleteAll);
+    
+    // Retrieve documents of Proyectos with id
+    router.get("/documentsProyect/:id", proyectos.findDocuments);
   
     app.use('/api/proyectos', router);
   };

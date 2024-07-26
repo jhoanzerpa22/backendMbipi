@@ -6,6 +6,7 @@ var fs = require('fs');
 const db = require('../models');
 const CloudUser = db.cloud_user;
 const ProyectoRecurso = db.proyecto_recurso;
+const ProyectoDocumento = db.proyecto_documento;
 
 cloudinary.config({
   cloud_name: 'tresideambipi',
@@ -175,6 +176,99 @@ router.post('/saveFiles/:proyecto_id/:usuario_id', upload.single('file'),async (
   }
 })
 
+router.post('/saveFilesProyect/:proyecto_id/:usuario_id', upload.single('file'),async (req, res)=>{
+  try{
+    const result = await cloudinary.uploader.upload(req.file.path)
+    //Crea una instancia de cloud_user
+    let cloud_user = {
+      name: 'Evidencia-'+req.params.proyecto_id+'-'+req.params.usuario_id,//req.body.name,
+      secure_url: result.secure_url,
+      cloudinary_id: result.public_id
+    };
+
+    console.log('cloud_user', cloud_user);
+    console.log('parametros',req.params);
+
+    await CloudUser.create(cloud_user).then(cloud =>{
+      console.log('cloud:',cloud);
+      let proyecto_documento = {'proyecto_id': req.params.proyecto_id, 'archivo_id': cloud.dataValues.id, 'usuario_id': req.params.usuario_id };
+
+      ProyectoDocumento.create(proyecto_documento).then(pr =>{
+          res.send({
+            message: `Proyecto Documento with id=${req.params.proyecto_id} was updated successfully.`, archivo_id: cloud.dataValues.id
+          });
+
+      }).catch(err => {
+          res.status(500).send({
+          message: "Error creating ProyectoDocumento. Error:"+err.message
+          });
+      });
+
+    }).catch(err => {
+        res.status(500).send({
+        message: "Error creating CloudUser. Error:"+err.message
+        });
+    });
+
+  } catch(err) {
+    console.log(err)
+  }
+})
+
+router.delete('/deleteImgProyect/:id/:cloudinary_id', async (req, res) =>{
+
+  const id = req.params.id;
+  const cloudinary_id = req.params.cloudinary_id;
+  
+  ProyectoDocumento.destroy({
+    where: { archivo_id: id }
+  })
+    .then(num3 => {
+      if (num3 == 1) {
+      
+    CloudUser.destroy({
+      where: { id: id }
+    })
+      .then(num2 => {
+        if (num2 == 1) {
+          cloudinary.uploader
+          .destroy(cloudinary_id)
+          .then(result=> {
+            console.log(result);
+            res.send({
+              message: "Cloud User Web was deleted successfully!"
+            });
+          }).catch(err => {
+            res.status(500).send({
+              message: "Could not delete Cloud User Web with cloudinary_id=" + cloudinary_id + ' | error:' + err.message
+            });
+          });
+            /*res.send({
+                message: "Cloud User was deleted successfully!"
+              });*/
+        } else {
+          res.send({
+            message: `Cannot delete Cloud User with id=${id}. Maybe Proyectos Documents was not found!`
+          });
+        }
+      }).catch(err => {
+        res.status(500).send({
+          message: "Could not delete Cloud User with id=" + id + ' | error:' + err.message
+        });
+      });
+    } else {
+      res.send({
+        message: `Cannot delete Documento Proyecto with id=${id}. Maybe Documento Proyect was not found!`
+      });
+    }
+    }).catch(err => {
+      res.status(500).send({
+        message: "Could not delete Proyecto Documento with id=" + id + ' | error:' + err.message
+      });
+    });
+  });
+  
+
 router.post('/saveFilesMulti', upload.array('files[]'),async (req, res)=>{
   try{
     const uploader = async (path) => await this.uploads(path, 'Images', req.params)
@@ -283,7 +377,5 @@ router.get("/", async (req, res) =>{
   });
 
 })
-
-
 
 module.exports = router;

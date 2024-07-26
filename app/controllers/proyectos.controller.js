@@ -30,6 +30,7 @@ const LeanCanvasEstructura = db.leancanvas_estructura;
 const LeanCanvasFlujo = db.leancanvas_flujo;
 const MapaCalor = db.mapa_calor;
 const BosquejarVoto = db.bosquejar_voto;
+const ProyectoDocumento = db.proyecto_documento;
 const CloudUser = db.cloud_user;
 
 const Op = db.Sequelize.Op;
@@ -143,6 +144,26 @@ exports.findAll = (req, res) => {
       });
     });
 };
+
+// Retrieve all Invitacions from the database.
+exports.findDocuments = (req, res) => {
+  const id = req.params.id;
+  var condition = id ? { proyecto_id: id } : null;
+
+  ProyectoDocumento.findAll({ where: condition, include: [{
+    model: CloudUser, attributes:['id','name','secure_url','cloudinary_id']
+  }]})
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving documents."
+      });
+    });
+};
+
 
 // Find a single Proyectos with an id
 exports.findOne = (req, res) => {

@@ -10,7 +10,7 @@ const Sequelize = require("sequelize");
 //LOCAL
 /*const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
-  dialect: dbConfig.dialect,/*
+  dialect: dbConfig.dialect,*//*
   native: true,
   ssl: true, 
     dialectOptions: {
@@ -79,6 +79,7 @@ db.cloud_user = require("./cloud_user.js")(sequelize, Sequelize);
 db.mapa_calor = require("./mapa_calor.model.js")(sequelize, Sequelize);
 db.bosquejar_voto = require("./bosquejar_voto.model.js")(sequelize, Sequelize);
 db.proyecto_recurso = require("./proyecto_recurso.model.js")(sequelize, Sequelize);
+db.proyecto_documento = require("./proyecto_documento.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -244,6 +245,10 @@ db.proyecto_recurso.belongsTo(db.bosquejar_voto, {
 
 db.proyecto_recurso.belongsTo(db.proyectos, {
   foreignKey: 'proyecto_id'
+});
+
+db.proyecto_documento.belongsTo(db.cloud_user, {
+  foreignKey: 'archivo_id'
 });
 
 db.ROLES = ["Administrador", "Usuario", "Invitado"];
