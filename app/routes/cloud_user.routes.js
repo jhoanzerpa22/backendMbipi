@@ -176,12 +176,12 @@ router.post('/saveFiles/:proyecto_id/:usuario_id', upload.single('file'),async (
   }
 })
 
-router.post('/saveFilesProyect/:proyecto_id/:usuario_id', upload.single('file'),async (req, res)=>{
+router.post('/saveFilesProyect/:nombre/:proyecto_id/:usuario_id', upload.single('file'),async (req, res)=>{
   try{
     const result = await cloudinary.uploader.upload(req.file.path)
     //Crea una instancia de cloud_user
     let cloud_user = {
-      name: 'Evidencia-'+req.params.proyecto_id+'-'+req.params.usuario_id,//req.body.name,
+      name: req.params.nombre,
       secure_url: result.secure_url,
       cloudinary_id: result.public_id
     };
